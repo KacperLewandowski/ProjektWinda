@@ -17,6 +17,10 @@
 #ifndef IDC_STATIC
 #define IDC_STATIC				-1
 #endif
+
+//ID przycisków
+#define ID_BUTTON1				200
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED

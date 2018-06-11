@@ -13,8 +13,11 @@ TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 
 INT value;
-const INT window_width = 1000;						//Szerokoœæ okienka
-const INT window_height = 720;						//Wysokoœæ okienka
+
+HWND hwndButton;
+
+const INT window_width = 1200;						//Szerokoœæ okienka
+const INT window_height = 700;						//Wysokoœæ okienka
 const INT screen_refresh_rate = 75;				//Czêstotliwoœæ odœwierzania ekranu
 
 // Forward declarations of functions included in this code module:
@@ -26,6 +29,7 @@ INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 void MyOnPaint(HDC hdc)
 {
+	/*
 	static bool move_right = TRUE;
 	if (value < 0) {
 		move_right = TRUE;
@@ -44,6 +48,7 @@ void MyOnPaint(HDC hdc)
 	//graphics.DrawLine(&pen,0,0,200,100);
 
 	graphics.DrawRectangle(&pen,100+value,100,10, 20);
+	*/
 }
 
 
@@ -155,6 +160,218 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, window_width, window_height, 0, NULL, NULL, hInstance, NULL);
+
+   int posX = 10;
+   int posY = 10;
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("3"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("2"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY+30,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("1"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY+60,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("0"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY+90,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   posY = 250;
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("4"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("3"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 30,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("1"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 60,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("0"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 90,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   posY = 500;
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("4"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("3"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 30,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("2"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 60,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("1"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 90,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   posX = 1140;
+   posY = 150;
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("4"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("2"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 30,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("1"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 60,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("0"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 90,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   posY = 400;
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("4"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("3"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 30,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("2"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 60,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
+
+   hwndButton = CreateWindow(TEXT("button"),
+	   TEXT("0"),
+	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+	   posX, posY + 90,
+	   30, 30,
+	   hWnd,
+	   (HMENU)ID_BUTTON1,
+	   hInstance,
+	   NULL);
    
    OnCreate(hWnd);
 
