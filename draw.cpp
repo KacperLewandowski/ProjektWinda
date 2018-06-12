@@ -20,6 +20,8 @@ const INT window_width = 1200;						//Szerokoœæ okienka
 const INT window_height = 700;						//Wysokoœæ okienka
 const INT screen_refresh_rate = 75;				//Czêstotliwoœæ odœwierzania ekranu
 
+RECT drawArea1 = { 455, 15, 745, 625 };
+
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
 BOOL				InitInstance(HINSTANCE, int);
@@ -29,12 +31,12 @@ INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 void MyOnPaint(HDC hdc)
 {
-	/*
+	
 	static bool move_right = TRUE;
 	if (value < 0) {
 		move_right = TRUE;
 	}
-	else if (value > window_width - 210) {
+	else if (value > 500) {
 		move_right = FALSE;
 	}
 	if (move_right) {
@@ -44,11 +46,29 @@ void MyOnPaint(HDC hdc)
 		value -= 2;
 	}
 	Graphics graphics(hdc);
-	Pen pen(Color(255,0,0,255));
+	Pen penBl(Color(255,0,0,255), 3);
 	//graphics.DrawLine(&pen,0,0,200,100);
 
-	graphics.DrawRectangle(&pen,100+value,100,10, 20);
-	*/
+	graphics.DrawRectangle(&penBl,460,20+value,280, 100);
+
+	//Rysuje szyb windy
+	Pen penB(Color(255, 0, 0, 0), 5);
+	graphics.DrawLine(&penB, 450, 10, 750, 10);
+	graphics.DrawLine(&penB, 450, 630, 750, 630);
+	graphics.DrawLine(&penB, 450, 10, 450, 630);
+	graphics.DrawLine(&penB, 750, 10, 750, 630);
+	
+}
+
+void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
+{
+	if (drawArea == NULL)
+		InvalidateRect(hWnd, NULL, TRUE); //Narysuj wszyskto
+	else
+		InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
+	hdc = BeginPaint(hWnd, &ps);
+	MyOnPaint(hdc);
+	EndPaint(hWnd, &ps);
 }
 
 
@@ -436,11 +456,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 			case TMR_1:
-				//force window to repaint
-				InvalidateRect(hWnd, NULL, TRUE);
-				hdc = BeginPaint(hWnd, &ps);
-				MyOnPaint(hdc);
-				EndPaint(hWnd, &ps);
+				repaintWindow(hWnd, hdc, ps, &drawArea1);
 			break;
 		}
 
