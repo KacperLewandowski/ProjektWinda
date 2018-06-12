@@ -1,4 +1,4 @@
-// draw.cpp : Defines the entry point for the application.
+ï»¿// draw.cpp : Defines the entry point for the application.
 //
 
 #include "stdafx.h"
@@ -16,9 +16,9 @@ INT value;
 
 HWND hwndButton;
 
-const INT window_width = 1200;						//Szerokoœæ okienka
-const INT window_height = 700;						//Wysokoœæ okienka
-const INT screen_refresh_rate = 75;				//Czêstotliwoœæ odœwierzania ekranu
+const INT window_width = 1200;						//SzerokoÅ“Ã¦ okienka
+const INT window_height = 700;						//WysokoÅ“Ã¦ okienka
+const INT screen_refresh_rate = 75;				//CzÃªstotliwoÅ“Ã¦ odÅ“wierzania ekranu
 
 RECT drawArea1 = { 455, 15, 745, 625 };
 
@@ -31,7 +31,7 @@ INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 void MyOnPaint(HDC hdc)
 {
-	
+
 	static bool move_right = TRUE;
 	if (value < 0) {
 		move_right = TRUE;
@@ -46,10 +46,10 @@ void MyOnPaint(HDC hdc)
 		value -= 2;
 	}
 	Graphics graphics(hdc);
-	Pen penBl(Color(255,0,0,255), 3);
+	Pen penBl(Color(255, 0, 0, 255), 3);
 	//graphics.DrawLine(&pen,0,0,200,100);
 
-	graphics.DrawRectangle(&penBl,460,20+value,280, 100);
+	graphics.DrawRectangle(&penBl, 460, 20 + value, 280, 100);
 
 	//Rysuje szyb windy
 	Pen penB(Color(255, 0, 0, 0), 5);
@@ -57,7 +57,14 @@ void MyOnPaint(HDC hdc)
 	graphics.DrawLine(&penB, 450, 630, 750, 630);
 	graphics.DrawLine(&penB, 450, 10, 450, 630);
 	graphics.DrawLine(&penB, 750, 10, 750, 630);
-	
+
+	//Rysuje pietra
+	Pen penC(Color(255, 0, 0, 0), 2);
+	graphics.DrawLine(&penC, 100, 134, 450, 134);
+	graphics.DrawLine(&penC, 750, 258, 1100, 258);
+	graphics.DrawLine(&penC, 100, 382, 450, 382);
+	graphics.DrawLine(&penC, 750, 506, 1100, 506);
+	graphics.DrawLine(&penC, 100, 630, 450, 630);
 }
 
 void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
@@ -74,25 +81,25 @@ void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 
 int OnCreate(HWND window)
 {
-   SetTimer(window, TMR_1, 1000/screen_refresh_rate, 0);		//Ustawia timer na czas trwania jednej klatki obrazu
-   return 0;
+	SetTimer(window, TMR_1, 1000 / screen_refresh_rate, 0);		//Ustawia timer na czas trwania jednej klatki obrazu
+	return 0;
 }
 
 
 
 int APIENTRY _tWinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPTSTR    lpCmdLine,
-                     int       nCmdShow)
+	HINSTANCE hPrevInstance,
+	LPTSTR    lpCmdLine,
+	int       nCmdShow)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
-	
- 	// TODO: Place code here.
+
+	// TODO: Place code here.
 	MSG msg;
 	HACCEL hAccelTable;
 
-	value= 10;
+	value = 10;
 
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR           gdiplusToken;
@@ -104,7 +111,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 	MyRegisterClass(hInstance);
 
 	// Perform application initialization:
-	if (!InitInstance (hInstance, nCmdShow))
+	if (!InitInstance(hInstance, nCmdShow))
 	{
 		return FALSE;
 	}
@@ -123,7 +130,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 
 	GdiplusShutdown(gdiplusToken);
 
-	return (int) msg.wParam;
+	return (int)msg.wParam;
 }
 
 
@@ -147,17 +154,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
-	wcex.style			= CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc	= WndProc;
-	wcex.cbClsExtra		= 0;
-	wcex.cbWndExtra		= 0;
-	wcex.hInstance		= hInstance;
-	wcex.hIcon			= LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DRAW));
-	wcex.hCursor		= LoadCursor(NULL, IDC_ARROW);
-	wcex.hbrBackground	= (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName	= MAKEINTRESOURCE(IDC_DRAW);
-	wcex.lpszClassName	= szWindowClass;
-	wcex.hIconSm		= LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_DRAW));
+	wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.lpszMenuName = MAKEINTRESOURCE(IDC_DRAW);
+	wcex.lpszClassName = szWindowClass;
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
 	return RegisterClassEx(&wcex);
 }
@@ -174,236 +181,236 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
-   HWND hWnd;
+	HWND hWnd;
 
-   hInst = hInstance; // Store instance handle in our global variable
+	hInst = hInstance; // Store instance handle in our global variable
 
-   hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, window_width, window_height, 0, NULL, NULL, hInstance, NULL);
+	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT, 0, window_width, window_height, 0, NULL, NULL, hInstance, NULL);
 
-   int posX = 10;
-   int posY = 10;
+	int posX = 10;
+	int posY = 10;
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("3"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("3"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("2"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY+30,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("2"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 30,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("1"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY+60,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("1"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 60,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("0"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY+90,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("0"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 90,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   posY = 250;
+	posY = 250;
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("4"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("4"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("3"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 30,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("3"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 30,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("1"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 60,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("1"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 60,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("0"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 90,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("0"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 90,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   posY = 500;
+	posY = 500;
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("4"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("4"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("3"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 30,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("3"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 30,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("2"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 60,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("2"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 60,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("1"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 90,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("1"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 90,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   posX = 1140;
-   posY = 150;
+	posX = 1140;
+	posY = 150;
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("4"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("4"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("2"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 30,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("2"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 30,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("1"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 60,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("1"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 60,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("0"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 90,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("0"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 90,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   posY = 400;
+	posY = 400;
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("4"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("4"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("3"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 30,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("3"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 30,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("2"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 60,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("2"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 60,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   hwndButton = CreateWindow(TEXT("button"),
-	   TEXT("0"),
-	   WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
-	   posX, posY + 90,
-	   30, 30,
-	   hWnd,
-	   (HMENU)ID_BUTTON1,
-	   hInstance,
-	   NULL);
-   
-   OnCreate(hWnd);
+	hwndButton = CreateWindow(TEXT("button"),
+		TEXT("0"),
+		WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+		posX, posY + 90,
+		30, 30,
+		hWnd,
+		(HMENU)ID_BUTTON1,
+		hInstance,
+		NULL);
 
-   if (!hWnd)
-   {
-      return FALSE;
-   }
+	OnCreate(hWnd);
 
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
+	if (!hWnd)
+	{
+		return FALSE;
+	}
 
-   return TRUE;
+	ShowWindow(hWnd, nCmdShow);
+	UpdateWindow(hWnd);
+
+	return TRUE;
 }
 
 //
@@ -427,7 +434,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_COMMAND:
-		wmId    = LOWORD(wParam);
+		wmId = LOWORD(wParam);
 		wmEvent = HIWORD(wParam);
 		// Parse the menu selections:
 		switch (wmId)
@@ -455,8 +462,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 		switch (wParam)
 		{
-			case TMR_1:
-				repaintWindow(hWnd, hdc, ps, &drawArea1);
+		case TMR_1:
+			repaintWindow(hWnd, hdc, ps, &drawArea1);
 			break;
 		}
 
