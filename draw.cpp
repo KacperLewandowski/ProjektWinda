@@ -1,29 +1,52 @@
-﻿// draw.cpp : Defines the entry point for the application.
+﻿﻿// draw.cpp : Defines the entry point for the application.
 //
 
 #include "stdafx.h"
 #include "draw.h"
+#include <vector>
+#include <queue>
 
 #define MAX_LOADSTRING 100
-#define TMR_1 1
+#define TMR_SYSTEM 1
+#define TMR_LIFTUP 2
+#define TMR_LIFTDOWN 3
 
-// Global Variables:
+
+ // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 
 INT value;
+INT liftFloor = 0;			//piętro na którym jest winda
+INT liftAnimValue = 0;
+INT floorHeight;
+INT nextFloorHeight;
+INT liftState = 0;			//Jeżeli == 0 to stoi winda, == 1 to jedzie do góry, == -1 jedzie na dół
 
 HWND hwndButton;
 
-const INT window_width = 1200;						//Szerokoœæ okienka
-const INT window_height = 700;						//Wysokoœæ okienka
-const INT screen_refresh_rate = 75;				//Czêstotliwoœæ odœwierzania ekranu
-INT X;
-INT Y;
+const INT window_width = 1200;						//Szerokość okienka
+const INT window_height = 700;						//Wysokość okienka
+const INT screen_refresh_rate = 75;				//Czêstotliwość odœwierzania ekranu
+
+struct guy {
+	INT whereToGo;		//Dokąd jadę
+};
+
+INT guysInLift[5];					//Tablica ludzi będących w windzie
+
+std::queue <guy> floor0up;			//Kolejki ludzi którzy jadą na poszczególnych piętrach na dół albo do góry
+std::queue <guy> floor1up;
+std::queue <guy> floor1down;
+std::queue <guy> floor2up;
+std::queue <guy> floor2down;
+std::queue <guy> floor3up;
+std::queue <guy> floor3down;
+std::queue <guy> floor4down;
 
 RECT drawArea1 = { 455, 15, 745, 625 };
-RECT drawArea2;
+RECT drawArea2 = { 440, 15, 770, 625 };
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -31,12 +54,116 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
-void drawPeople(HDC hdc, INT X, INT Y);
-void drawAll(HDC hdc, INT X, INT Y);
+
+
+
+void fillDoor(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea) {
+	InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
+	hdc = BeginPaint(hWnd, &ps);
+	HBRUSH brush = CreateSolidBrush(RGB(255, 255, 255));
+	FillRect(hdc, drawArea, brush);
+	DeleteObject(brush);
+	EndPaint(hWnd, &ps);
+}
+
+void openDoor(INT floor, HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {			//Rysuje biały prostokąt iminutjący otwarte drzwi
+	Graphics graphics(hdc);
+	RECT rect;
+	switch (floor)
+	{
+	case 0:
+		rect = { 440, 526, 470, 619 };
+		break;
+	case 1:
+		rect = { 730, 412, 760, 505 };
+		break;
+	case 2:
+		rect = { 440, 288, 470, 381 };
+		break;
+	case 3:
+		rect = { 730, 164, 760, 257 };
+		break;
+	case 4:
+		rect = { 440, 40, 470, 133 };
+		break;
+	}
+	fillDoor(hWnd, hdc, ps, &rect);
+}
+
+
+void closeDoor(INT floor, HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {
+	RECT rect;
+	switch (floor)
+	{
+	case 0:
+		rect = { 440, 526, 470, 619 };
+		break;
+	case 1:
+		rect = { 730, 412, 760, 505 };
+		break;
+	case 2:
+		rect = { 440, 288, 470, 381 };
+		break;
+	case 3:
+		rect = { 730, 164, 760, 257 };
+		break;
+	case 4:
+		rect = { 440, 40, 470, 133 };
+		break;
+	}
+	InvalidateRect(hWnd, &rect, TRUE); //Narysuj rect
+	hdc = BeginPaint(hWnd, &ps);
+	Graphics graphics(hdc);
+	Pen penB(Color(255, 0, 0, 0), 5);
+	graphics.DrawLine(&penB, 450, 10, 450, 630);
+	graphics.DrawLine(&penB, 750, 10, 750, 630);
+	EndPaint(hWnd, &ps);
+}
+
+void liftUp(HDC hdc, HWND window) {
+	switch (liftFloor) 
+	{
+	case 4:
+		break;
+	case 3:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);	//Ustawia timer na czas trwania jednej klatki obrazu
+		break;
+	case 2:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);
+		break;
+	case 1:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);
+		break;
+	case 0:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);
+		break;
+	}
+}
+
+void liftDown(HDC hdc, HWND window) {
+	switch (liftFloor)
+	{
+	case 4:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);	//Ustawia timer na czas trwania jednej klatki obrazu
+		break;
+	case 3:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);
+		break;
+	case 2:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);
+		break;
+	case 1:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);
+		break;
+	case 0:
+		break;
+	}
+}
+
 
 void MyOnPaint(HDC hdc)
 {
-
+	/*
 	static bool move_right = TRUE;
 	if (value < 0) {
 		move_right = TRUE;
@@ -50,11 +177,12 @@ void MyOnPaint(HDC hdc)
 	else {
 		value -= 2;
 	}
+	*/
 	Graphics graphics(hdc);
 	Pen penBl(Color(255, 0, 0, 255), 3);
 	//graphics.DrawLine(&pen,0,0,200,100);
-
-	graphics.DrawRectangle(&penBl, 460, 20 + value, 280, 100);
+	value = 15;
+	graphics.DrawRectangle(&penBl, 460, 520, 280, 100);
 
 	//Rysuje szyb windy
 	Pen penB(Color(255, 0, 0, 0), 5);
@@ -69,57 +197,10 @@ void MyOnPaint(HDC hdc)
 	graphics.DrawLine(&penC, 750, 258, 1100, 258);
 	graphics.DrawLine(&penC, 100, 382, 450, 382);
 	graphics.DrawLine(&penC, 750, 506, 1100, 506);
-	graphics.DrawLine(&penC, 100, 630, 450, 630);
-	//drawAll(hdc, X, Y);
+	graphics.DrawLine(&penC, 100, 620, 450, 620);
 
 }
 
-void drawPeople(HDC hdc, INT X, INT Y)
-{
-	Graphics graphics(hdc);
-
-	Pen penC(Color(255, 0, 0, 0), 2);
-	graphics.DrawEllipse(&penC, X-2, Y-87, 25, 25);	// head
-	graphics.DrawLine(&penC, X+11, Y-60, X+11, Y-29);	// body
-	graphics.DrawLine(&penC, X+11, Y-34, X, Y);  // legs
-	graphics.DrawLine(&penC, X+11, Y-34, X+21, Y);
-	graphics.DrawLine(&penC, X-6, Y-64, X+11, Y-39);  // arms
-	graphics.DrawLine(&penC, X+27, Y-64, X+11,Y-39);
-}
-
-void drawAll(HDC hdc, INT X, INT Y)
-{
-	drawPeople(hdc, X = 150, Y = 134);
-	drawPeople(hdc, X = 200, Y = 134);
-	drawPeople(hdc, X = 250, Y = 134);
-	drawPeople(hdc, X = 300, Y = 134);
-	drawPeople(hdc, X = 100, Y = 258);
-	drawPeople(hdc, X = 100, Y = 258);
-	drawPeople(hdc, X = 100, Y = 258);
-	drawPeople(hdc, X = 100, Y = 258);
-	drawPeople(hdc, X = 100, Y = 382);
-	drawPeople(hdc, X = 100, Y = 382);
-	drawPeople(hdc, X = 100, Y = 382);
-	drawPeople(hdc, X = 100, Y = 382);
-	drawPeople(hdc, X = 100, Y = 506);
-	drawPeople(hdc, X = 100, Y = 506);
-	drawPeople(hdc, X = 100, Y = 506);
-	drawPeople(hdc, X = 100, Y = 506);
-	drawPeople(hdc, X = 100, Y = 630);
-	drawPeople(hdc, X = 100, Y = 630);
-	drawPeople(hdc, X = 100, Y = 630);
-	drawPeople(hdc, X = 100, Y = 630);
-}
-
-void repaintWW(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea2)
-{	
-	InvalidateRect(hWnd, drawArea2, TRUE); //Narysuj2
-	hdc = BeginPaint(hWnd, &ps);
-	Graphics graphics(hdc);
-//	drawPeople(hdc);
-	MyOnPaint(hdc);
-	EndPaint(hWnd, &ps);
-}
 
 void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 {
@@ -132,10 +213,259 @@ void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 	EndPaint(hWnd, &ps);
 }
 
+void animLiftUp(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
+{
+	InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
+	hdc = BeginPaint(hWnd, &ps);
+	Graphics graphics(hdc);
+	Pen penBl(Color(255, 0, 0, 255), 3);
+	switch(liftFloor)
+	{
+	case 3:
+		floorHeight = 258;
+		nextFloorHeight = 134;
+		break;
+	case 2:
+		floorHeight = 382;
+		nextFloorHeight = 258;
+		break;
+	case 1:
+		floorHeight = 506;
+		nextFloorHeight = 382;
+		break;
+	case 0:
+		floorHeight = 620;
+		nextFloorHeight = 506;
+		break;
+	}
+	graphics.DrawRectangle(&penBl, 460, floorHeight - liftAnimValue - 100, 280, 100);
+	liftAnimValue++;
+	if (floorHeight - liftAnimValue <= nextFloorHeight) {
+		liftFloor++;
+		KillTimer(hWnd, TMR_LIFTUP);
+		liftAnimValue = 0;
+	}
+	EndPaint(hWnd, &ps);
+}
+
+void animLiftDown(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
+{
+	InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
+	hdc = BeginPaint(hWnd, &ps);
+	Graphics graphics(hdc);
+	Pen penBl(Color(255, 0, 0, 255), 3);
+	switch (liftFloor)
+	{
+	case 4:
+		floorHeight = 134;
+		nextFloorHeight = 258;
+		break;
+	case 3:
+		floorHeight = 258;
+		nextFloorHeight = 382;
+		break;
+	case 2:
+		floorHeight = 382;
+		nextFloorHeight = 506;
+		break;
+	case 1:
+		floorHeight = 506;
+		nextFloorHeight = 620;
+		break;
+	}
+	graphics.DrawRectangle(&penBl, 460, floorHeight + liftAnimValue - 100, 280, 100);
+	liftAnimValue++;
+	if (floorHeight + liftAnimValue >= nextFloorHeight) {
+		liftFloor--;
+		KillTimer(hWnd, TMR_LIFTDOWN);
+		liftAnimValue = 0;
+	}
+	EndPaint(hWnd, &ps);
+}
+
+
+void liftSystem(HDC hdc, HWND hWnd) {
+	switch (liftState)
+	{
+	case 0:		//gdy stoi w miejscu (implikuje to sytuację gdy jest pusta)
+		if (!floor0up.empty()) {
+			if (liftFloor != 0) {
+				liftDown(hdc, hWnd);
+				liftState = -1;
+			}
+			else {
+				do {
+					guysInLift[floor0up.front().whereToGo]++;
+					floor0up.pop();
+				} while (!floor0up.empty());		//Pakuje ludzi do windy aż się kolejka skończy
+				liftState = 1;
+			}
+		}
+		else if (!floor1up.empty()) {
+			if (liftFloor == 0) {
+				liftUp(hdc, hWnd);
+				liftState = 1;
+			}
+			else if (liftFloor > 1) {
+				liftDown(hdc, hWnd);
+				liftState = -1;
+			}
+			else {
+				do {
+					guysInLift[floor1up.front().whereToGo]++;
+					floor1up.pop();
+				} while (!floor1up.empty());
+				liftState = 1;
+			}
+		}
+		else if (!floor1down.empty()) {
+			if (liftFloor == 0) {
+				liftUp(hdc, hWnd);
+				liftState = 1;
+			}
+			else if (liftFloor > 1) {
+				liftDown(hdc, hWnd);
+				liftState = -1;
+			}
+			else {
+				do {
+					guysInLift[floor1down.front().whereToGo]++;
+					floor1down.pop();
+				} while (!floor1down.empty());
+				liftState = -1;
+			}
+		}
+		else if (!floor2up.empty()) {
+			if (liftFloor < 2) {
+				liftUp(hdc, hWnd);
+				liftState = 1;
+			}
+			else if (liftFloor > 2) {
+				liftDown(hdc, hWnd);
+				liftState = -1;
+			}
+			else {
+				do {
+					guysInLift[floor2up.front().whereToGo]++;
+					floor2up.pop();
+				} while (!floor2up.empty());
+				liftState = 1;
+			}
+		}
+		else if (!floor2down.empty()) {
+			if (liftFloor < 2) {
+				liftUp(hdc, hWnd);
+				liftState = 1;
+			}
+			else if (liftFloor > 2) {
+				liftDown(hdc, hWnd);
+				liftState = -1;
+			}
+			else {
+				do {
+					guysInLift[floor2down.front().whereToGo]++;
+					floor2down.pop();
+				} while (!floor2down.empty());
+				liftState = -1;
+			}
+		}
+		else if (!floor3up.empty()) {
+			if (liftFloor < 3) {
+				liftUp(hdc, hWnd);
+				liftState = 1;
+			}
+			else if (liftFloor == 4) {
+				liftDown(hdc, hWnd);
+				liftState = -1;
+			}
+			else {
+				do {
+					guysInLift[floor3up.front().whereToGo]++;
+					floor3up.pop();
+				} while (!floor3up.empty());
+				liftState = 1;
+			}
+		}
+		else if (!floor3down.empty()) {
+			if (liftFloor < 3) {
+				liftUp(hdc, hWnd);
+				liftState = 1;
+			}
+			else if (liftFloor == 4) {
+				liftDown(hdc, hWnd);
+				liftState = -1;
+			}
+			else {
+				do {
+					guysInLift[floor3down.front().whereToGo]++;
+					floor3down.pop();
+				} while (!floor3down.empty());
+				liftState = -1;
+			}
+		}
+		else if (!floor4down.empty()) {
+			if (liftFloor != 4) {
+				liftUp(hdc, hWnd);
+				liftState = 1;
+			}
+			else {
+				do {
+					guysInLift[floor4down.front().whereToGo]++;
+					floor4down.pop();
+				} while (!floor4down.empty());
+				liftState = -1;
+			}
+		}
+		break;
+
+		case 1:
+			if (liftAnimValue == 0) {			//liftAnimValue == 0 gdy winda znajduje się na równo z jakimś piętrem
+				if (liftFloor == 0) {
+					while (!floor0up.empty()) {
+						guysInLift[floor0up.front().whereToGo]++;
+						floor1up.pop();
+					}
+					guysInLift[liftFloor] = 0;
+				}
+				if (liftFloor == 1) {
+					while (!floor1up.empty()) {
+						guysInLift[floor1up.front().whereToGo]++;
+						floor1up.pop();
+					}
+					guysInLift[liftFloor] = 0;
+				}
+				if (liftFloor == 2) {
+					while (!floor2up.empty()) {
+						guysInLift[floor2up.front().whereToGo]++;
+						floor2up.pop();
+					}
+					guysInLift[liftFloor] = 0;
+				}
+				if (liftFloor == 3) {
+					while (!floor3up.empty()) {
+						guysInLift[floor3up.front().whereToGo]++;
+						floor3up.pop();
+					}
+					
+				}
+				if (liftFloor == 4) {
+					guysInLift[liftFloor] = 0;
+				}
+				if (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4] == 0) {
+					liftState = 0;
+				}
+				else {
+					liftUp(hdc, hWnd);
+				}
+			}
+			break;
+	}
+}
+
 
 int OnCreate(HWND window)
 {
-	SetTimer(window, TMR_1, 1000 / screen_refresh_rate, 0);		//Ustawia timer na czas trwania jednej klatki obrazu
+	SetTimer(window, TMR_SYSTEM, 2000 / screen_refresh_rate, 0);
 	return 0;
 }
 
@@ -239,7 +569,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	hInst = hInstance; // Store instance handle in our global variable
 
-	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+	hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_BORDER,
 		CW_USEDEFAULT, 0, window_width, window_height, 0, NULL, NULL, hInstance, NULL);
 
 	int posX = 10;
@@ -482,8 +812,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
+	guy nowy;
 	//OnCreate(hWnd,wParam,lParam);
 	//OnTimer(hWnd,wParam,lParam);
+
 	switch (message)
 	{
 	case WM_COMMAND:
@@ -495,68 +827,88 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
-		case ID_BUTTON_FLOOR0_1:
-
-			break;
-		case ID_BUTTON_FLOOR0_2:
-
-			break;
-		case ID_BUTTON_FLOOR0_3:
-
-			break;
-		case ID_BUTTON_FLOOR0_4:
-
-			break;
-		case ID_BUTTON_FLOOR1_0:
-
-			break;
-		case ID_BUTTON_FLOOR1_2:
-
-			break;
-		case ID_BUTTON_FLOOR1_3:
-
-			break;
-		case ID_BUTTON_FLOOR1_4:
-
-			break;
-		case ID_BUTTON_FLOOR2_0:
-
-			break;
-		case ID_BUTTON_FLOOR2_1:
-
-			break;
-		case ID_BUTTON_FLOOR2_3:
-
-			break;
-		case ID_BUTTON_FLOOR2_4:
-
-			break;
-		case ID_BUTTON_FLOOR3_0:
-
-			break;
-		case ID_BUTTON_FLOOR3_1:
-
-			break;
-		case ID_BUTTON_FLOOR3_2:
-
-			break;
-		case ID_BUTTON_FLOOR3_4:
-
-			break;
-		case ID_BUTTON_FLOOR4_0:
-
-			break;
-		case ID_BUTTON_FLOOR4_1:
-
-			break;
-		case ID_BUTTON_FLOOR4_2:
-
-			break;
-		case ID_BUTTON_FLOOR4_3:
-
-			break;
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
+			break;
+		case ID_BUTTON_FLOOR0_1:
+			nowy.whereToGo = 1;
+			floor0up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR0_2:
+			nowy.whereToGo = 2;
+			floor0up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR0_3:
+			nowy.whereToGo = 3;
+			floor0up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR0_4:
+			nowy.whereToGo = 4;
+			floor0up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR1_0:
+			nowy.whereToGo = 0;
+			floor1down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR1_2:
+			nowy.whereToGo = 2;
+			floor1up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR1_3:
+			nowy.whereToGo = 3;
+			floor1up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR1_4:
+			nowy.whereToGo = 4;
+			floor1up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR2_0:
+			nowy.whereToGo = 0;
+			floor2down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR2_1:
+			nowy.whereToGo = 1;
+			floor2down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR2_3:
+			nowy.whereToGo = 3;
+			floor2up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR2_4:
+			nowy.whereToGo = 4;
+			floor2up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR3_0:
+			nowy.whereToGo = 0;
+			floor3down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR3_1:
+			nowy.whereToGo = 1;
+			floor3down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR3_2:
+			nowy.whereToGo = 2;
+			floor3down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR3_4:
+			nowy.whereToGo = 4;
+			floor3up.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR4_0:
+			nowy.whereToGo = 0;
+			floor4down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR4_1:
+			nowy.whereToGo = 1;
+			floor4down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR4_2:
+			nowy.whereToGo = 2;
+			floor4down.push(nowy);
+			break;
+		case ID_BUTTON_FLOOR4_3:
+			nowy.whereToGo = 3;
+			floor4down.push(nowy);
 			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
@@ -575,10 +927,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_TIMER:
 		switch (wParam)
 		{
-		case TMR_1:
-			repaintWindow(hWnd, hdc, ps, &drawArea1);
+		case TMR_SYSTEM:
+			//repaintWindow(hWnd, hdc, ps, &drawArea1);
+			hdc = BeginPaint(hWnd, &ps);
+			liftSystem(hdc, hWnd);
+			EndPaint(hWnd, &ps);
+			break;
+		case TMR_LIFTUP:
+			animLiftUp(hWnd, hdc, ps, &drawArea1);
+			break;
+		case TMR_LIFTDOWN:
+			animLiftDown(hWnd, hdc, ps, &drawArea1);
 			break;
 		}
+	
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
