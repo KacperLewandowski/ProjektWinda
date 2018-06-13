@@ -1,4 +1,4 @@
-﻿// draw.cpp : Defines the entry point for the application.
+﻿﻿// draw.cpp : Defines the entry point for the application.
 //
 
 #include "stdafx.h"
@@ -6,21 +6,28 @@
 
 #define MAX_LOADSTRING 100
 #define TMR_1 1
+#define TMR_LIFTUP 2
+#define TMR_LIFTDOWN 3
 
-// Global Variables:
+ // Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 
 INT value;
+INT liftFloor = 0;
+INT liftAnimValue = 0;
+INT floorHeight;
+INT nextFloorHeight;
 
 HWND hwndButton;
 
-const INT window_width = 1200;						//Szerokoœæ okienka
-const INT window_height = 700;						//Wysokoœæ okienka
-const INT screen_refresh_rate = 75;				//Czêstotliwoœæ odœwierzania ekranu
+const INT window_width = 1200;						//Szerokość okienka
+const INT window_height = 700;						//Wysokość okienka
+const INT screen_refresh_rate = 75;				//Czêstotliwość odœwierzania ekranu
 
 RECT drawArea1 = { 455, 15, 745, 625 };
+RECT drawArea2 = { 440, 15, 770, 625 };
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -28,10 +35,113 @@ BOOL				InitInstance(HINSTANCE, int);
 LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
+void fillDoor(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea) {
+	InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
+	hdc = BeginPaint(hWnd, &ps);
+	HBRUSH brush = CreateSolidBrush(RGB(255, 255, 255));
+	FillRect(hdc, drawArea, brush);
+	DeleteObject(brush);
+	EndPaint(hWnd, &ps);
+}
+
+void openDoor(INT floor, HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {			//Rysuje biały prostokąt iminutjący otwarte drzwi
+	Graphics graphics(hdc);
+	RECT rect;
+	switch (floor)
+	{
+	case 0:
+		rect = { 440, 526, 470, 619 };
+		break;
+	case 1:
+		rect = { 730, 412, 760, 505 };
+		break;
+	case 2:
+		rect = { 440, 288, 470, 381 };
+		break;
+	case 3:
+		rect = { 730, 164, 760, 257 };
+		break;
+	case 4:
+		rect = { 440, 40, 470, 133 };
+		break;
+	}
+	fillDoor(hWnd, hdc, ps, &rect);
+}
+
+
+void closeDoor(INT floor, HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {
+	RECT rect;
+	switch (floor)
+	{
+	case 0:
+		rect = { 440, 526, 470, 619 };
+		break;
+	case 1:
+		rect = { 730, 412, 760, 505 };
+		break;
+	case 2:
+		rect = { 440, 288, 470, 381 };
+		break;
+	case 3:
+		rect = { 730, 164, 760, 257 };
+		break;
+	case 4:
+		rect = { 440, 40, 470, 133 };
+		break;
+	}
+	InvalidateRect(hWnd, &rect, TRUE); //Narysuj rect
+	hdc = BeginPaint(hWnd, &ps);
+	Graphics graphics(hdc);
+	Pen penB(Color(255, 0, 0, 0), 5);
+	graphics.DrawLine(&penB, 450, 10, 450, 630);
+	graphics.DrawLine(&penB, 750, 10, 750, 630);
+	EndPaint(hWnd, &ps);
+}
+
+void liftUp(HDC hdc, HWND window) {
+	switch (liftFloor) 
+	{
+	case 4:
+		break;
+	case 3:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);
+		break;
+	case 2:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);
+		break;
+	case 1:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);
+		break;
+	case 0:
+		SetTimer(window, TMR_LIFTUP, 1000 / screen_refresh_rate, 0);
+		break;
+	}
+}
+
+void liftDown(HDC hdc, HWND window) {
+	switch (liftFloor)
+	{
+	case 4:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);
+		break;
+	case 3:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);
+		break;
+	case 2:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);
+		break;
+	case 1:
+		SetTimer(window, TMR_LIFTDOWN, 1000 / screen_refresh_rate, 0);
+		break;
+	case 0:
+		break;
+	}
+}
+
 
 void MyOnPaint(HDC hdc)
 {
-
+	/*
 	static bool move_right = TRUE;
 	if (value < 0) {
 		move_right = TRUE;
@@ -45,11 +155,12 @@ void MyOnPaint(HDC hdc)
 	else {
 		value -= 2;
 	}
+	*/
 	Graphics graphics(hdc);
 	Pen penBl(Color(255, 0, 0, 255), 3);
 	//graphics.DrawLine(&pen,0,0,200,100);
-
-	graphics.DrawRectangle(&penBl, 460, 20 + value, 280, 100);
+	value = 15;
+	graphics.DrawRectangle(&penBl, 460, 520, 280, 100);
 
 	//Rysuje szyb windy
 	Pen penB(Color(255, 0, 0, 0), 5);
@@ -64,8 +175,10 @@ void MyOnPaint(HDC hdc)
 	graphics.DrawLine(&penC, 750, 258, 1100, 258);
 	graphics.DrawLine(&penC, 100, 382, 450, 382);
 	graphics.DrawLine(&penC, 750, 506, 1100, 506);
-	graphics.DrawLine(&penC, 100, 630, 450, 630);
+	graphics.DrawLine(&penC, 100, 620, 450, 620);
+
 }
+
 
 void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 {
@@ -75,6 +188,76 @@ void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 		InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
 	hdc = BeginPaint(hWnd, &ps);
 	MyOnPaint(hdc);
+	EndPaint(hWnd, &ps);
+}
+
+void animLiftUp(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
+{
+	InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
+	hdc = BeginPaint(hWnd, &ps);
+	Graphics graphics(hdc);
+	Pen penBl(Color(255, 0, 0, 255), 3);
+	switch(liftFloor)
+	{
+	case 3:
+		floorHeight = 258;
+		nextFloorHeight = 134;
+		break;
+	case 2:
+		floorHeight = 382;
+		nextFloorHeight = 258;
+		break;
+	case 1:
+		floorHeight = 506;
+		nextFloorHeight = 382;
+		break;
+	case 0:
+		floorHeight = 620;
+		nextFloorHeight = 506;
+		break;
+	}
+	graphics.DrawRectangle(&penBl, 460, floorHeight - liftAnimValue - 100, 280, 100);
+	liftAnimValue++;
+	if (floorHeight - liftAnimValue <= nextFloorHeight) {
+		liftFloor++;
+		KillTimer(hWnd, TMR_LIFTUP);
+		liftAnimValue = 0;
+	}
+	EndPaint(hWnd, &ps);
+}
+
+void animLiftDown(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
+{
+	InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
+	hdc = BeginPaint(hWnd, &ps);
+	Graphics graphics(hdc);
+	Pen penBl(Color(255, 0, 0, 255), 3);
+	switch (liftFloor)
+	{
+	case 4:
+		floorHeight = 134;
+		nextFloorHeight = 258;
+		break;
+	case 3:
+		floorHeight = 258;
+		nextFloorHeight = 382;
+		break;
+	case 2:
+		floorHeight = 382;
+		nextFloorHeight = 506;
+		break;
+	case 1:
+		floorHeight = 506;
+		nextFloorHeight = 620;
+		break;
+	}
+	graphics.DrawRectangle(&penBl, 460, floorHeight + liftAnimValue - 100, 280, 100);
+	liftAnimValue++;
+	if (floorHeight + liftAnimValue >= nextFloorHeight) {
+		liftFloor--;
+		KillTimer(hWnd, TMR_LIFTDOWN);
+		liftAnimValue = 0;
+	}
 	EndPaint(hWnd, &ps);
 }
 
@@ -376,7 +559,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		posX, posY + 30,
 		30, 30,
 		hWnd,
-		(HMENU)ID_BUTTON1,
+		(HMENU)ID_BUTTON4,
 		hInstance,
 		NULL);
 
@@ -386,7 +569,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		posX, posY + 60,
 		30, 30,
 		hWnd,
-		(HMENU)ID_BUTTON1,
+		(HMENU)ID_BUTTON3,
 		hInstance,
 		NULL);
 
@@ -396,7 +579,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 		posX, posY + 90,
 		30, 30,
 		hWnd,
-		(HMENU)ID_BUTTON1,
+		(HMENU)ID_BUTTON2,
 		hInstance,
 		NULL);
 
@@ -445,6 +628,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
+		case ID_BUTTON1:
+			hdc = BeginPaint(hWnd, &ps);
+			liftUp(hdc, hWnd);
+			EndPaint(hWnd, &ps);
+			break;
+		case ID_BUTTON2:
+			hdc = BeginPaint(hWnd, &ps);
+			liftDown(hdc, hWnd);
+			EndPaint(hWnd, &ps);
+			break;
+		case ID_BUTTON3:
+			hdc = BeginPaint(hWnd, &ps);
+			openDoor(0, hdc, hWnd, ps);
+			EndPaint(hWnd, &ps);
+			break;
+		case ID_BUTTON4:
+			hdc = BeginPaint(hWnd, &ps);
+			closeDoor(0, hdc, hWnd, ps);
+			EndPaint(hWnd, &ps);
+			break;
 		default:
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
@@ -463,9 +666,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case TMR_1:
-			repaintWindow(hWnd, hdc, ps, &drawArea1);
+			//repaintWindow(hWnd, hdc, ps, &drawArea1);
+			break;
+		case TMR_LIFTUP:
+			animLiftUp(hWnd, hdc, ps, &drawArea1);
+			break;
+		case TMR_LIFTDOWN:
+			animLiftDown(hWnd, hdc, ps, &drawArea1);
 			break;
 		}
+	
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);

@@ -20,6 +20,9 @@
 
 //ID przycisków
 #define ID_BUTTON1				200
+#define ID_BUTTON2				201
+#define ID_BUTTON3				202
+#define ID_BUTTON4				203
 
 // Next default values for new objects
 //
