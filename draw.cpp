@@ -1,4 +1,4 @@
-﻿﻿// draw.cpp : Defines the entry point for the application.
+﻿// draw.cpp : Defines the entry point for the application.
 //
 
 #include "stdafx.h"
@@ -13,33 +13,34 @@
 #define TMR_LIFTDOWN 3
 
 
- // Global Variables:
+// Global Variables:
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
 
 INT value;
-INT liftFloor = 0;			//piętro na którym jest winda
+INT liftFloor = 0;			//piÄ™tro na ktĂłrym jest winda
 INT liftAnimValue = 0;
 INT floorHeight;
 INT nextFloorHeight;
-INT liftState = 0;			//Jeżeli == 0 to stoi winda, == 1 to jedzie do góry, == -1 jedzie na dół
+INT liftState = 0;			//JeĹĽeli == 0 to stoi winda, == 1 to jedzie do gĂłry, == -1 jedzie na dĂłĹ‚
+INT liftSecure = 0;			//Zabezpieczenie przed wielokrotnym rysowaniem windy na postoju
 
 HWND hwndButton;
 
-const INT window_width = 1200;						//Szerokość okienka
-const INT window_height = 700;						//Wysokość okienka
-const INT screen_refresh_rate = 75;				//Czêstotliwość odœwierzania ekranu
+const INT window_width = 1200;						//SzerokoĹ›Ä‡ okienka
+const INT window_height = 700;						//WysokoĹ›Ä‡ okienka
+const INT screen_refresh_rate = 75;				//CzĂŞstotliwoĹ›Ä‡ odĹ“wierzania ekranu
 
 struct guy {
-	INT whereToGo;		//Dokąd jadę
+	INT whereToGo;		//DokÄ…d jadÄ™
 };
 
-INT guysInLift[5];					//Tablica ludzi będących w windzie
+INT guysInLift[5];					//Tablica ludzi bÄ™dÄ…cych w windzie
 INT X, Y;
 INT weight = 70 * (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]);
 
-std::queue <guy> floor0up;			//Kolejki ludzi którzy jadą na poszczególnych piętrach na dół albo do góry
+std::queue <guy> floor0up;			//Kolejki ludzi ktĂłrzy jadÄ… na poszczegĂłlnych piÄ™trach na dĂłĹ‚ albo do gĂłry
 std::queue <guy> floor1up;
 std::queue <guy> floor1down;
 std::queue <guy> floor2up;
@@ -73,7 +74,7 @@ void fillDoor(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea) {
 	EndPaint(hWnd, &ps);
 }
 
-void openDoor(INT floor, HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {			//Rysuje biały prostokąt iminutjący otwarte drzwi
+void openDoor(INT floor, HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {			//Rysuje biaĹ‚y prostokÄ…t iminutjÄ…cy otwarte drzwi
 	Graphics graphics(hdc);
 	RECT rect;
 	switch (floor)
@@ -137,7 +138,7 @@ void openAndCloseDoor(INT floor, HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {
 }
 
 void liftUp(HDC hdc, HWND window) {
-	switch (liftFloor) 
+	switch (liftFloor)
 	{
 	case 4:
 		break;
@@ -243,23 +244,23 @@ void writeWeight(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)  //Liczy 
 
 void animLiftStop(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)  //"Animacja" wychodzenia ludzi z windy gdy stoi
 {
-	InvalidateRect(hWnd, drawArea, TRUE); 
+	InvalidateRect(hWnd, drawArea, TRUE);
 	hdc = BeginPaint(hWnd, &ps);
 	Graphics graphics(hdc);
 	Pen penBl(Color(255, 0, 0, 255), 3);
-		if ((guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]) == 0 && liftState == 0) {
-			if (liftFloor == 0)
-				graphics.DrawRectangle(&penBl, 460, 520, 280, 100);
-			if (liftFloor == 1)
-				graphics.DrawRectangle(&penBl, 460, 406, 280, 100);
-			if (liftFloor == 2)
-				graphics.DrawRectangle(&penBl, 460, 282, 280, 100);
-			if (liftFloor == 3)
-				graphics.DrawRectangle(&penBl, 460, 158, 280, 100);
-			if (liftFloor == 4)
-				graphics.DrawRectangle(&penBl, 460, 34, 280, 100);
-		}
-	
+	if ((guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]) == 0 && liftState == 0) {
+		if (liftFloor == 0)
+			graphics.DrawRectangle(&penBl, 460, 520, 280, 100);
+		if (liftFloor == 1)
+			graphics.DrawRectangle(&penBl, 460, 406, 280, 100);
+		if (liftFloor == 2)
+			graphics.DrawRectangle(&penBl, 460, 282, 280, 100);
+		if (liftFloor == 3)
+			graphics.DrawRectangle(&penBl, 460, 158, 280, 100);
+		if (liftFloor == 4)
+			graphics.DrawRectangle(&penBl, 460, 34, 280, 100);
+	}
+
 	EndPaint(hWnd, &ps);
 }
 
@@ -269,7 +270,7 @@ void animLiftUp(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 	hdc = BeginPaint(hWnd, &ps);
 	Graphics graphics(hdc);
 	Pen penBl(Color(255, 0, 0, 255), 3);
-	switch(liftFloor)
+	switch (liftFloor)
 	{
 	case 3:
 		floorHeight = 258;
@@ -418,8 +419,8 @@ void animLiftDown(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 void liftSystem(HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {
 	switch (liftState)
 	{
-	case 0:		//gdy stoi w miejscu (implikuje to sytuację gdy jest pusta)
-		
+	case 0:		//gdy stoi w miejscu (implikuje to sytuacjÄ™ gdy jest pusta)
+
 		if (!floor0up.empty()) {
 			if (liftFloor != 0) {
 				liftDown(hdc, hWnd);
@@ -430,7 +431,7 @@ void liftSystem(HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {
 				do {
 					guysInLift[floor0up.front().whereToGo]++;
 					floor0up.pop();
-				} while (!floor0up.empty());		//Pakuje ludzi do windy aż się kolejka skończy
+				} while (!floor0up.empty());		//Pakuje ludzi do windy aĹĽ siÄ™ kolejka skoĹ„czy
 				liftUp(hdc, hWnd);
 				liftState = 1;
 			}
@@ -566,119 +567,119 @@ void liftSystem(HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {
 		}
 		break;
 
-		case 1:
-			if (liftAnimValue == 0) {			//liftAnimValue == 0 gdy winda znajduje się na równo z jakimś piętrem
-				if (liftFloor == 0) {
-					if (!floor0up.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(0, hdc, hWnd, ps);
-					}
-					while (!floor0up.empty()) {
-						guysInLift[floor0up.front().whereToGo]++;
-						floor1up.pop();
-					}
-					guysInLift[liftFloor] = 0;
+	case 1:
+		if (liftAnimValue == 0) {			//liftAnimValue == 0 gdy winda znajduje siÄ™ na rĂłwno z jakimĹ› piÄ™trem
+			if (liftFloor == 0) {
+				if (!floor0up.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(0, hdc, hWnd, ps);
 				}
-				if (liftFloor == 1) {
-					if (!floor1up.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(1, hdc, hWnd, ps);
-					}
-					while (!floor1up.empty()) {
-						guysInLift[floor1up.front().whereToGo]++;
-						floor1up.pop();
-					}
-					guysInLift[liftFloor] = 0;
+				while (!floor0up.empty()) {
+					guysInLift[floor0up.front().whereToGo]++;
+					floor1up.pop();
 				}
-				if (liftFloor == 2) {
-					if (!floor2up.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(2, hdc, hWnd, ps);
-					}
-					while (!floor2up.empty()) {
-						guysInLift[floor2up.front().whereToGo]++;
-						floor2up.pop();
-					}
-					guysInLift[liftFloor] = 0;
-				}
-				if (liftFloor == 3) {
-					if (!floor3up.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(3, hdc, hWnd, ps);
-					}
-					while (!floor3up.empty()) {
-						guysInLift[floor3up.front().whereToGo]++;
-						floor3up.pop();
-					}
-					guysInLift[liftFloor] = 0;
-				}
-				if (liftFloor == 4) {
-					if (guysInLift[liftFloor] != 0) {
-						openAndCloseDoor(4, hdc, hWnd, ps);
-					}
-					guysInLift[liftFloor] = 0;
-				}
-				if (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4] == 0) {
-					liftState = 0;
-				}
-				else {
-					liftUp(hdc, hWnd);
-				}
+				guysInLift[liftFloor] = 0;
 			}
-			break;
+			if (liftFloor == 1) {
+				if (!floor1up.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(1, hdc, hWnd, ps);
+				}
+				while (!floor1up.empty()) {
+					guysInLift[floor1up.front().whereToGo]++;
+					floor1up.pop();
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (liftFloor == 2) {
+				if (!floor2up.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(2, hdc, hWnd, ps);
+				}
+				while (!floor2up.empty()) {
+					guysInLift[floor2up.front().whereToGo]++;
+					floor2up.pop();
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (liftFloor == 3) {
+				if (!floor3up.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(3, hdc, hWnd, ps);
+				}
+				while (!floor3up.empty()) {
+					guysInLift[floor3up.front().whereToGo]++;
+					floor3up.pop();
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (liftFloor == 4) {
+				if (guysInLift[liftFloor] != 0) {
+					openAndCloseDoor(4, hdc, hWnd, ps);
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4] == 0) {
+				liftState = 0;
+			}
+			else {
+				liftUp(hdc, hWnd);
+			}
+		}
+		break;
 
-		case -1:
-			if (liftAnimValue == 0) {
-				if (liftFloor == 4) {
-					if (!floor4down.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(4, hdc, hWnd, ps);
-					}
-					while (!floor4down.empty()) {
-						guysInLift[floor4down.front().whereToGo]++;
-						floor4down.pop();
-					}
-					guysInLift[liftFloor] = 0;
+	case -1:
+		if (liftAnimValue == 0) {
+			if (liftFloor == 4) {
+				if (!floor4down.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(4, hdc, hWnd, ps);
 				}
-				if (liftFloor == 3) {
-					if (!floor3down.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(3, hdc, hWnd, ps);
-					}
-					while (!floor3down.empty()) {
-						guysInLift[floor3down.front().whereToGo]++;
-						floor3down.pop();
-					}
-					guysInLift[liftFloor] = 0;
+				while (!floor4down.empty()) {
+					guysInLift[floor4down.front().whereToGo]++;
+					floor4down.pop();
 				}
-				if (liftFloor == 2) {
-					if (!floor2down.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(2, hdc, hWnd, ps);
-					}
-					while (!floor2down.empty()) {
-						guysInLift[floor2down.front().whereToGo]++;
-						floor2down.pop();
-					}
-					guysInLift[liftFloor] = 0;
-				}
-				if (liftFloor == 1) {
-					if (!floor1down.empty() || (guysInLift[liftFloor] != 0)) {
-						openAndCloseDoor(1, hdc, hWnd, ps);
-					}
-					while (!floor1down.empty()) {
-						guysInLift[floor1down.front().whereToGo]++;
-						floor1down.pop();
-					}
-					guysInLift[liftFloor] = 0;
-				}
-				if (liftFloor == 0) {
-					if (guysInLift[liftFloor] != 0) {
-						openAndCloseDoor(0, hdc, hWnd, ps);
-					}
-					guysInLift[liftFloor] = 0;
-				}
-				if (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4] == 0) {
-					liftState = 0;
-				}
-				else {
-					liftDown(hdc, hWnd);
-				}
+				guysInLift[liftFloor] = 0;
 			}
-			break;
+			if (liftFloor == 3) {
+				if (!floor3down.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(3, hdc, hWnd, ps);
+				}
+				while (!floor3down.empty()) {
+					guysInLift[floor3down.front().whereToGo]++;
+					floor3down.pop();
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (liftFloor == 2) {
+				if (!floor2down.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(2, hdc, hWnd, ps);
+				}
+				while (!floor2down.empty()) {
+					guysInLift[floor2down.front().whereToGo]++;
+					floor2down.pop();
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (liftFloor == 1) {
+				if (!floor1down.empty() || (guysInLift[liftFloor] != 0)) {
+					openAndCloseDoor(1, hdc, hWnd, ps);
+				}
+				while (!floor1down.empty()) {
+					guysInLift[floor1down.front().whereToGo]++;
+					floor1down.pop();
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (liftFloor == 0) {
+				if (guysInLift[liftFloor] != 0) {
+					openAndCloseDoor(0, hdc, hWnd, ps);
+				}
+				guysInLift[liftFloor] = 0;
+			}
+			if (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4] == 0) {
+				liftState = 0;
+			}
+			else {
+				liftDown(hdc, hWnd);
+			}
+		}
+		break;
 	}
 }
 
@@ -1150,19 +1151,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			hdc = BeginPaint(hWnd, &ps);
 			if (liftState == 0) {
 				liftSystem(hdc, hWnd, ps);
-				animLiftStop(hWnd, hdc, ps, &drawArea1);
+				if (liftSecure == 0) {
+					animLiftStop(hWnd, hdc, ps, &drawArea1);
+					liftSecure = 1;
+				}
+				writeWeight(hWnd, hdc, ps, &drawArea3);
 			}
-			writeWeight(hWnd, hdc, ps, &drawArea3);
 			EndPaint(hWnd, &ps);
 			break;
 		case TMR_LIFTUP:
 			animLiftUp(hWnd, hdc, ps, &drawArea1);
+			liftSecure = 0;
 			break;
 		case TMR_LIFTDOWN:
 			animLiftDown(hWnd, hdc, ps, &drawArea1);
+			liftSecure = 0;
 			break;
 		}
-	
+
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
