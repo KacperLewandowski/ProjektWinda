@@ -5,6 +5,7 @@
 #include "draw.h"
 #include <vector>
 #include <queue>
+#include <string>
 
 #define MAX_LOADSTRING 100
 #define TMR_SYSTEM 1
@@ -35,6 +36,8 @@ struct guy {
 };
 
 INT guysInLift[5];					//Tablica ludzi będących w windzie
+INT X, Y;
+INT weight = 70 * (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]);
 
 std::queue <guy> floor0up;			//Kolejki ludzi którzy jadą na poszczególnych piętrach na dół albo do góry
 std::queue <guy> floor1up;
@@ -47,6 +50,7 @@ std::queue <guy> floor4down;
 
 RECT drawArea1 = { 455, 15, 745, 625 };
 RECT drawArea2 = { 440, 15, 770, 625 };
+RECT drawArea3 = { 800, 100, 1100, 200 };
 
 // Forward declarations of functions included in this code module:
 ATOM				MyRegisterClass(HINSTANCE hInstance);
@@ -56,6 +60,7 @@ INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 
 
 void liftSystem(HDC hdc, HWND hWnd, PAINTSTRUCT &ps);
+void writeWeight(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea);
 
 
 
@@ -174,25 +179,9 @@ void liftDown(HDC hdc, HWND window) {
 
 void MyOnPaint(HDC hdc)
 {
-	/*
-	static bool move_right = TRUE;
-	if (value < 0) {
-		move_right = TRUE;
-	}
-	else if (value > 500) {
-		move_right = FALSE;
-	}
-	if (move_right) {
-		value += 2;
-	}
-	else {
-		value -= 2;
-	}
-	*/
 	Graphics graphics(hdc);
 	Pen penBl(Color(255, 0, 0, 255), 3);
-	//graphics.DrawLine(&pen,0,0,200,100);
-	value = 15;
+	//value = 15;
 	graphics.DrawRectangle(&penBl, 460, 520, 280, 100);
 
 	//Rysuje szyb windy
@@ -212,6 +201,18 @@ void MyOnPaint(HDC hdc)
 
 }
 
+void drawPeople(HDC hdc, INT X, INT Y)
+{
+	Graphics graphics(hdc);
+
+	Pen penC(Color(255, 0, 0, 0), 2);
+	graphics.DrawEllipse(&penC, X - 2, Y - 87, 25, 25);	// head
+	graphics.DrawLine(&penC, X + 11, Y - 60, X + 11, Y - 29);	// body
+	graphics.DrawLine(&penC, X + 11, Y - 34, X, Y);  // legs
+	graphics.DrawLine(&penC, X + 11, Y - 34, X + 21, Y);
+	graphics.DrawLine(&penC, X - 6, Y - 64, X + 11, Y - 39);  // arms
+	graphics.DrawLine(&penC, X + 27, Y - 64, X + 11, Y - 39);
+}
 
 void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 {
@@ -221,6 +222,44 @@ void repaintWindow(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 		InvalidateRect(hWnd, drawArea, TRUE); //Narysuj drawArea
 	hdc = BeginPaint(hWnd, &ps);
 	MyOnPaint(hdc);
+	EndPaint(hWnd, &ps);
+}
+
+void writeWeight(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)  //Liczy i wypisuje wage przewozonych pasazerow
+{
+
+	InvalidateRect(hWnd, drawArea, TRUE);
+	hdc = BeginPaint(hWnd, &ps);
+	float weight = 70.f * (guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]);
+	std::string variableToString = std::to_string(weight);
+	std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+	LPCWSTR newString = temporary.c_str();
+	TextOut(hdc, 900, 180, (LPCWSTR)newString, 7);
+	TextOut(hdc, 900, 160, (LPCWSTR)L"Masa pasazerow", 15);
+	TextOut(hdc, 960, 180, (LPCWSTR)L"kg", 2);
+	EndPaint(hWnd, &ps);
+}
+
+
+void animLiftStop(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)  //"Animacja" wychodzenia ludzi z windy gdy stoi
+{
+	InvalidateRect(hWnd, drawArea, TRUE); 
+	hdc = BeginPaint(hWnd, &ps);
+	Graphics graphics(hdc);
+	Pen penBl(Color(255, 0, 0, 255), 3);
+		if ((guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]) == 0 && liftState == 0) {
+			if (liftFloor == 0)
+				graphics.DrawRectangle(&penBl, 460, 520, 280, 100);
+			if (liftFloor == 1)
+				graphics.DrawRectangle(&penBl, 460, 406, 280, 100);
+			if (liftFloor == 2)
+				graphics.DrawRectangle(&penBl, 460, 282, 280, 100);
+			if (liftFloor == 3)
+				graphics.DrawRectangle(&penBl, 460, 158, 280, 100);
+			if (liftFloor == 4)
+				graphics.DrawRectangle(&penBl, 460, 34, 280, 100);
+		}
+	
 	EndPaint(hWnd, &ps);
 }
 
@@ -249,7 +288,47 @@ void animLiftUp(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 		nextFloorHeight = 506;
 		break;
 	}
-	graphics.DrawRectangle(&penBl, 460, floorHeight - liftAnimValue - 100, 280, 100);		//TODO tutaj jest malowana pusta winda
+	graphics.DrawRectangle(&penBl, 460, floorHeight - liftAnimValue - 100, 280, 100);		//Rysowanie ludzi w windzie
+	if ((guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]) != 0)
+	{
+		if (guysInLift[4] != 0)
+		{
+			drawPeople(hdc, X = 480, Y = floorHeight - liftAnimValue);
+			TextOut(hdc, 487, floorHeight - liftAnimValue - 80, (LPCWSTR)L"4", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[4]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 505, floorHeight - liftAnimValue - 95, (LPCWSTR)newString, 2);
+
+		}
+		if (guysInLift[3] != 0)
+		{
+			drawPeople(hdc, X = 530, Y = floorHeight - liftAnimValue);
+			TextOut(hdc, 537, floorHeight - liftAnimValue - 80, (LPCWSTR)L"3", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[3]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 555, floorHeight - liftAnimValue - 95, (LPCWSTR)newString, 2);
+		}
+		if (guysInLift[2] != 0)
+		{
+			drawPeople(hdc, X = 580, Y = floorHeight - liftAnimValue);
+			TextOut(hdc, 587, floorHeight - liftAnimValue - 80, (LPCWSTR)L"2", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[2]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 605, floorHeight - liftAnimValue - 95, (LPCWSTR)newString, 2);
+		}
+		if (guysInLift[1] != 0)
+		{
+			drawPeople(hdc, X = 630, Y = floorHeight - liftAnimValue);
+			TextOut(hdc, 637, floorHeight - liftAnimValue - 80, (LPCWSTR)L"1", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[1]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 655, floorHeight - liftAnimValue - 95, (LPCWSTR)newString, 2);
+		}
+	}
 	liftAnimValue++;
 	if (floorHeight - liftAnimValue <= nextFloorHeight) {
 		liftFloor++;
@@ -285,7 +364,46 @@ void animLiftDown(HWND hWnd, HDC &hdc, PAINTSTRUCT &ps, RECT *drawArea)
 		nextFloorHeight = 620;
 		break;
 	}
-	graphics.DrawRectangle(&penBl, 460, floorHeight + liftAnimValue - 100, 280, 100);		//TODO tutaj też jest malowana pusta winda
+	graphics.DrawRectangle(&penBl, 460, floorHeight + liftAnimValue - 100, 280, 100);		//Rysowanie ludzi w windzie
+	if ((guysInLift[0] + guysInLift[1] + guysInLift[2] + guysInLift[3] + guysInLift[4]) != 0)
+	{
+		if (guysInLift[3] != 0)
+		{
+			drawPeople(hdc, X = 480, Y = floorHeight + liftAnimValue);
+			TextOut(hdc, 487, floorHeight + liftAnimValue - 80, (LPCWSTR)L"3", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[3]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 505, floorHeight + liftAnimValue - 95, (LPCWSTR)newString, 2);
+		}
+		if (guysInLift[2] != 0)
+		{
+			drawPeople(hdc, X = 530, Y = floorHeight + liftAnimValue);
+			TextOut(hdc, 537, floorHeight + liftAnimValue - 80, (LPCWSTR)L"2", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[2]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 555, floorHeight + liftAnimValue - 95, (LPCWSTR)newString, 2);
+		}
+		if (guysInLift[1] != 0)
+		{
+			drawPeople(hdc, X = 580, Y = floorHeight + liftAnimValue);
+			TextOut(hdc, 587, floorHeight + liftAnimValue - 80, (LPCWSTR)L"1", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[1]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 605, floorHeight + liftAnimValue - 95, (LPCWSTR)newString, 2);
+		}
+		if (guysInLift[0] != 0)
+		{
+			drawPeople(hdc, X = 630, Y = floorHeight + liftAnimValue);
+			TextOut(hdc, 637, floorHeight + liftAnimValue - 80, (LPCWSTR)L"0", 1);
+			std::string variableToString = std::to_string(1.f*guysInLift[0]);
+			std::wstring temporary = std::wstring(variableToString.begin(), variableToString.end());
+			LPCWSTR newString = temporary.c_str();
+			TextOut(hdc, 655, floorHeight + liftAnimValue - 95, (LPCWSTR)newString, 2);
+		}
+	}
 	liftAnimValue++;
 	if (floorHeight + liftAnimValue >= nextFloorHeight) {
 		liftFloor--;
@@ -301,6 +419,7 @@ void liftSystem(HDC hdc, HWND hWnd, PAINTSTRUCT &ps) {
 	switch (liftState)
 	{
 	case 0:		//gdy stoi w miejscu (implikuje to sytuację gdy jest pusta)
+		
 		if (!floor0up.empty()) {
 			if (liftFloor != 0) {
 				liftDown(hdc, hWnd);
@@ -1017,7 +1136,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code here...
 		MyOnPaint(hdc);
 		EndPaint(hWnd, &ps);
 		break;
@@ -1029,11 +1147,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wParam)
 		{
 		case TMR_SYSTEM:
-			//repaintWindow(hWnd, hdc, ps, &drawArea1);
 			hdc = BeginPaint(hWnd, &ps);
 			if (liftState == 0) {
 				liftSystem(hdc, hWnd, ps);
+				animLiftStop(hWnd, hdc, ps, &drawArea1);
 			}
+			writeWeight(hWnd, hdc, ps, &drawArea3);
 			EndPaint(hWnd, &ps);
 			break;
 		case TMR_LIFTUP:
